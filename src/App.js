@@ -3,6 +3,7 @@ import Header from './components/Header';
 import Formulario from './components/Formulario';
 import Error from './components/Error';
 import axios from 'axios';
+import Clima from './components/Clima';
 
 function App() {
 
@@ -10,31 +11,29 @@ function App() {
   const [pais, guardarPais] = useState('');
   const [ciudad, guardarCiudad] = useState('');
   const [error, guardarError] = useState(false);
+  const [dataWeather, guardarDataWeather] = useState({});
 
   // URL Data
   const appID = 'c8a234c291b86312f28838ef57a74e2e';
-  const path = 'https://samples.openweathermap.org/data/2.5/weather/';
+  const path = 'https://api.openweathermap.org/data/2.5/weather/';
   
   useEffect(() => {
     if(ciudad === '') return;
+    console.log('useEffect')
     const consultarAPI = async() => {
-      const clima = await axios.get( path, {
-        mode: 'no-cors',
-        params: {
-          q : `${ciudad},${pais}`, 
-          appid : appID
-        },
-        headers: {
-          'Access-Control-Allow-Origin':'*',
-          'Access-Control-Allow-Headers':'application/json',
-        }
-      });
-      console.log('clima', clima)
-    // const url = `${path}?q=${ciudad},${pais}&appid=${appID}`;
-    // const respuesta = await fetch(url);
-    // const resultado = await respuesta.json();
-
-    // console.log('resultado', resultado)
+      let clima = null;
+      try{
+        clima = await axios.get( path, {
+          params: {
+            q : `${ciudad},${pais}`, 
+            appid : appID
+          }
+        });
+        guardarDataWeather(clima.data);
+      } catch(e){
+        guardarDataWeather({statusCode : 404});
+      }
+      console.log('clima-----------', clima)
     }
     consultarAPI();
 
@@ -60,7 +59,7 @@ function App() {
   if(error){
     component = <Error mensaje="Ambos campos son obligatorios"/>;
   } else {
-    component = null;
+    component = <Clima dataWeather={dataWeather}/>;
   }
 
   return (
